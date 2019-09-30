@@ -1,0 +1,48 @@
+delimiters "<", ">"
+import "io/protostuff/generator/core.stg"
+import "io/protostuff/generator/java/generator.stg"
+
+enum(enum) ::= <<
+package <enum.proto.javaPackage>;
+
+<enum:enum_body()>
+>>
+
+enum_body(enum) ::= <<
+<if(!enum.nested)><enum:generator_annotation()><endif>
+public enum <enum.javaName> implements io.protostuff.EnumLite\<<enum.javaName>\>{
+
+    <enum.constants:enum_constant(); separator=",\n"><if(first(enum.constants))>,<endif>
+    UNRECOGNIZED(-1);
+
+    private final int value;
+
+    private <enum.javaName>(int n) {
+        this.value = n;
+    }
+
+    @Override
+    public int getNumber() {
+        if (value == -1) {
+          throw new java.lang.IllegalStateException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+    }
+
+    public static final <enum.javaName> valueOf(int tag) {
+        switch(tag) {
+            <enum.constants:{constant|case <constant.value>: return <constant.javaName>;}; separator="\n">
+            default: return UNRECOGNIZED;
+        }
+    }
+}
+>>
+
+enum_constant(constant) ::= <<
+<constant.javaName>(<constant.value>)
+>>
+
+enum_default_value(enum) ::= <%
+<first(enum.constants):enum_constant()>
+%>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="libs/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link href="libs/angular-bootstrap-nav-tree-gildo/0.1.0/dist/abn_tree.css" rel="stylesheet">
+    <link href="libs/angular-material/1.1.1/angular-material.min.css" rel="stylesheet">
+    <link href="css/theme.css" rel="stylesheet">
+
+    <script src="libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="libs/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- BEGIN Angular -->
+    <script src="libs/angularjs/1.5.8/angular.min.js"></script>
+    <script src="libs/angularjs/1.5.8/angular-animate.min.js"></script>
+    <script src="libs/angularjs/1.5.8/angular-route.min.js"></script>
+    <script src="libs/angularjs/1.5.8/angular-aria.min.js"></script>
+    <script src="libs/angularjs/1.5.8/angular-messages.min.js"></script>
+    <script src="libs/angularjs/1.5.8/angular-sanitize.min.js"></script>
+    <script src="libs/angular-material/1.1.1/angular-material.min.js"></script>
+    <script src="libs/angular-bootstrap-nav-tree-gildo/0.1.0/dist/abn_tree_directive.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/directives.js"></script>
+    <script src="js/factories.js"></script>
+    <!-- END Angular -->
+
+    <title>Protocol Documentation</title>
+</head>
+
+<body>
+<nav class="navbar navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Protocol Documentation</a>
+        </div>
+
+        <div class="navbar-form navbar-right" role="search" ng-controller="SearchCtrl as ctrl" ng-cloak>
+            <div class="input-group">
+                <form ng-sumbit="ctrl.manualSearch()">
+                    <!-- Needed to override md-autocomplete. Let's us register form submit event -->
+                    <button ng-click="ctrl.manualSearch()" style="display: none;"></button>
+
+                    <md-autocomplete md-selected-item="ctrl.selectedItem"
+                                     md-search-text="ctrl.searchText"
+                                     md-items="item in ctrl.filterItems(ctrl.searchText)"
+                                     md-selected-item-change="ctrl.selectedItemChange(item)"
+                                     md-item-text="item.label"
+                                     md-autofocus
+                                     md-select-on-match
+                                     placeholder="Search...">
+                        <span md-highlight-text="ctrl.searchText">{{item.label}}</span>
+                    </md-autocomplete>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div ng-controller="TreeCtrl as treeCtrl" class="col-sm-4 col-md-3 sidebar">
+            <div id="pages" class="pages">
+                <h1>Documents</h1>
+                <ul>
+                    <li ng-repeat="page in treeCtrl.pages"><a href="#/pages/{{page.ref}}">{{page.name}}</a></li>
+                </ul>
+            </div>
+            <div id="tree">
+                <h1>Type Hierarchy</h1>
+                <abn-tree
+                        tree-data="treeCtrl.treeData"
+                        tree-control="treeCtrl.treeService.getTree()"
+                        expand-level="2"
+                        icon-leaf="glyphicon glyphicon-file"
+                        icon-expand="glyphicon glyphicon-plus"
+                        icon-collapse="glyphicon glyphicon-minus"
+                        on-select="treeCtrl.show(branch)">
+                </abn-tree>
+            </div>
+        </div>
+        <div ng-view id="content" class="col-sm-8 col-sm-offset-4 col-md-9 col-md-offset-3 main">
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

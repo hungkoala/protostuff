@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+//package search;
+
+option java_package = "io.protostuff.examples";
+
+import "wrappers.proto";
+import "test.proto";
+
+
+message SearchResponse {
+   repeated Result results = 1;
+   enum Corpus {
+      UNIVERSAL = 0;
+      WEB = 1;
+      IMAGES = 2;
+      LOCAL = 30;
+      NEWS = 4;
+      PRODUCTS = 5;
+      VIDEO = 6;
+   }
+   Corpus corpus = 2;
+
+   map<string, Project> projects = 3;
+}
+
+message Result {
+   string url = 1;
+   string title = 2;
+   repeated string snippets = 3;
+}
+
+message Project {
+   string name = 1 [(hung.protobuf.validator) = ""];
+}
+
+
+enum KAK {
+   option (hung.protobuf.kakaa) = false;
+   YES = 0;
+   NO = 2;
+}
+
+//
+//message SearchRequest {
+//   string query = 1;
+//   google.protobuf.StringValue aaa=4;
+//   int32 page_number = 2;
+//   int32 result_per_page = 3;
+//}
+//
+//message BasicSearchRequest1 {
+//   string keyword = 1;
+//   string mama = 2;
+//}
+//
+//message BasicSearchRequest {
+//   string keyword = 1;
+//   string mama = 2;
+//}
+//
+//message ExtendedSearchRequest {
+//   repeated string keywords = 1;
+//}
+
+
+//service Search {
+//   rpc basicSearch (BasicSearchRequest) returns (SearchResponse);
+//   rpc extendedSearch (ExtendedSearchRequest) returns (SearchResponse);
+//}

@@ -1,0 +1,126 @@
+delimiters "<", ">"
+
+field_declaration(field) ::= <<
+<if(field.oneofPart)>
+<elseif(field.map)>
+private <field.javaMapType> <field.javaName>;
+<elseif(field.repeated)>
+  <if(field.type.enum)>
+  private java.util.List\<Integer> <field.javaName>;
+  <else>
+  private <field.javaRepeatedType> <field.javaName>;
+  <endif>
+<elseif(field.type.enum)>
+private int <field.javaName>;
+<else>
+private <field.javaType> <field.javaName>;
+<endif>
+>>
+
+oneof_case(oneOf) ::= <<
+public <oneOf.javaName> <oneOf.javaCaseGetterName>() {
+    return <oneOf.javaCaseFieldName>;
+}
+>>
+
+oneof_fields(oneOf) ::= <<
+private <oneOf.javaName> <oneOf.javaCaseFieldName> = <oneOf.javaName>.<oneOf.javaNotSetConstantName>;
+private Object <oneOf.javaFieldName> = null;
+>>
+
+message_bit_field(name) ::= <<
+private int <name>;
+>>
+
+field_initializer(field) ::= <%
+<if(field.map)>
+this.<field.javaName> = java.util.Collections.emptyMap();
+<elseif(field.repeated)>
+this.<field.javaName> = java.util.Collections.emptyList();
+<elseif(field.oneofPart)>
+<elseif(field.type.enum)>
+this.<field.javaName> = <field.javaDefaultValue>.getNumber();
+<else>
+this.<field.javaName> = <field.javaDefaultValue>;
+<endif>
+%>
+
+equals(message, builder) ::= <<
+@Override
+public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (obj == null || this.getClass() != obj.getClass()) {
+        return false;
+    }
+    <if(builder)>
+    Builder that = (Builder) obj;
+    <else>
+    <message.javaName> that = (<message.javaName>) obj;
+    <endif>
+    <if(message.hasFields)>
+    <message.fields:field_equals_part()>
+    <message.oneofs:oneof_field_equals_part()>
+    return true;
+    <else>
+    return true;
+    <endif>
+}
+>>
+
+hash_code(message) ::= <<
+@Override
+public int hashCode() {
+    <if(message.hasFields)>
+    int result = 1;
+    <message.fields:field_hashCode_part()>
+    <message.oneofs:oneof_field_hashCode_part()>
+    return result;
+    <else>
+    return 0;
+    <endif>
+}
+>>
+
+to_string(message) ::= <<
+@Override
+public String toString() {
+    java.util.List\<String> parts = new java.util.ArrayList\<>();
+    <message.fields:field_toString_part()>
+    return "<message.javaName>{" + String.join(", ", parts) + "}";
+}
+>>
+
+
+field_equals_part(field) ::= <<
+<if(!field.oneofPart)>
+if (!java.util.Objects.equals(this.<field.javaName>, that.<field.javaName>)) {
+    return false;
+}
+<endif>
+>>
+
+oneof_field_equals_part(oneof) ::= <<
+if (!(java.util.Objects.equals(this.<oneof.javaCaseFieldName>, that.<oneof.javaCaseFieldName>)
+        && java.util.Objects.equals(this.<oneof.javaFieldName>, that.<oneof.javaFieldName>))) {
+    return false;
+}
+>>
+
+field_hashCode_part(field) ::= <<
+<if(!field.oneofPart)>
+<if(!field.repeated && (field.javaIsNumericType || field.javaIsBooleanType))>
+result = 31 * result + <field.type.javaWrapperType>.hashCode(this.<field.javaName>);
+<elseif(!field.repeated && field.type.enum)>
+result = 31 * result + Integer.hashCode(this.<field.javaName>);
+<else>
+result = 31 * result + (this.<field.javaName> == null ? 0 : this.<field.javaName>.hashCode());
+<endif>
+<endif>
+>>
+
+oneof_field_hashCode_part(oneof) ::= <<
+result = 31 * result + this.<oneof.javaCaseFieldName>.hashCode();
+result = 31 * result + (this.<oneof.javaFieldName> == null ? 0 : this.<oneof.javaFieldName>.hashCode());
+>>
